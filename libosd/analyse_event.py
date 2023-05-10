@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import gc
 import argparse
 import json
 import libosd.webApiConnection
@@ -16,41 +17,45 @@ def dateStr2secs(dateStr):
     return parsed_t.timestamp()
 
 
-def runTest():
+def run_test():
     # Note, in test DB graham4 is a staff (researcher) user
     #              and graham29 is a normal user
 
-    for unameStr in ("graham29", "graham4"):
+    for uname_str in ("graham29", "graham4"):
         print("**********************")
-        print("Trying as user %s" % unameStr)
+        print("Trying as user %s" % uname_str)
         print("**********************")
-        osd = libosd.libosd(cfg="client.cfg", uname=unameStr,
+        osd = libosd.libosd(cfg="client.cfg", uname=uname_str,
                             passwd="testpwd1", debug=True)
-        eventsObj = osd.getEvents(userId=38)
-        if (eventsObj is not None):
-            for event in eventsObj:
+        events_obj = osd.getEvents(userId=38)
+        if (events_obj is not None):
+            for event in events_obj:
                 print(event)
         else:
-            print("ERROR - No Data Returned");
+            print("ERROR - No Data Returned")
 
-        datapointsObj = osd.getDataPointsByEvent(eventId=395)
-        if (datapointsObj is not None):
-            for dp in datapointsObj:
+        datapoints_obj = osd.getDataPointsByEvent(eventId=395)
+        if (datapoints_obj is not None):
+            for dp in datapoints_obj:
                 #print("dp=",dp)
-                dpObj = json.loads(dp['dataJSON'])
-                dataObj = json.loads(dpObj['dataJSON'])
+                dp_obj = json.loads(dp['dataJSON'])
+                data_obj = json.loads(dp_obj['dataJSON'])
                 #print(dataObj.keys())
-                print("%s, %d, %d, %.0f, %.0f, %.2f" % (dataObj['dataTime'],
+                print("%s, %d, %d, %.0f, %.0f, %.2f" % (data_obj['dataTime'],
                                                   dp['id'], dp['eventId'],
-                                                  dataObj['specPower'],dataObj['roiPower'],
-                                                  dataObj['roiPower']/dataObj['specPower']                                      ))
-                dpObj = None
-                dataObj = None
+                                                  data_obj['specPower'],data_obj['roiPower'],
+                                                  data_obj['roiPower']/data_obj['specPower']                                      ))
+
+                dp_obj = None
+                data_obj = None
+                del dp_obj,data_obj
         else:
             print("ERROR - No Data Returned")
 
         osd = None
-        datapointsObj = None
+        osd = None
+        datapoints_obj = None
+        gc.collect()
 
             
 class EventAnalyser:
